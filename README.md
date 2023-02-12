@@ -1,0 +1,2 @@
+# ekni
+WireGuard Configuration Server
