@@ -29,7 +29,8 @@ func main() {
 	r.HandleFunc("/api/init/{ip_address}/{listen_port}/{private_key}", actions.InitWireGuardServer).Methods("GET")
 	r.HandleFunc("/api/addclient/{client_name}/{client_ip}/{client_private_key}", actions.CreateWireGuardClientConfig).Methods("GET")
 	r.HandleFunc("/api/getuserip", actions.GetUserIP).Methods("GET")
+	r.HandleFunc("/api/login/{username}/{password}", actions.Login).Methods("GET")
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":8675", r)
 
 }
