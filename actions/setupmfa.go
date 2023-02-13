@@ -8,7 +8,7 @@ import (
 	"github.com/pquerna/otp/totp"
 )
 
-func SetupMfa(w http.ResponseWriter, r *http.Request) {
+func SetupMfa(w http.ResponseWriter, r *http.Request, SystemConfig shared.EkniConfig) {
 	username := r.FormValue("username")
 	// Authenticate the user
 	db, err := sqlx.Open("sqlite3", "users.db")
@@ -32,7 +32,7 @@ func SetupMfa(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a TOTP secret for the user
 	secret, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "Example Inc.",
+		Issuer:      SystemConfig.OtpIssuer,
 		AccountName: username,
 	})
 	if err != nil {
