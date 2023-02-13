@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"ekni/shared"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
@@ -17,7 +18,7 @@ func SetupMfa(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	user := WebUser{}
+	user := shared.WebUser{}
 	err = db.Get(&user, "SELECT * FROM users WHERE username=?", username)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)

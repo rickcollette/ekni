@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"ekni/shared"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +25,7 @@ func DownloadWireGuardClientConfig(c buffalo.Context) error {
 	}
 	defer db.Close()
 
-	client := Client{}
+	client := shared.Client{}
 	err = db.Where("name = ?", clientName).First(&client)
 	if err != nil {
 		return c.Error(http.StatusNotFound, err)

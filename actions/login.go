@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"ekni/shared"
 	"net/http"
 	"time"
 
@@ -10,20 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type WebUser struct {
-	Username string
-	Email    string
-	Password string
-	Mfa      bool
-	Active   bool
-	Admin    bool
-}
-
 func Login(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 	token := r.FormValue("token")
-
 	// Authenticate the user's password
 	db, err := sqlx.Open("sqlite3", "users.db")
 	if err != nil {
@@ -32,7 +23,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	user := WebUser{}
+	user := shared.WebUser{}
 	err = db.Get(&user, "SELECT * FROM users WHERE username=?", username)
 	if err != nil {
 		http.Error(w, "Username or password incorrect", http.StatusUnauthorized)
@@ -52,7 +43,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if !user.Mfa {
 		// User does not have MFA enabled, proceed to login
-		// ...
+		session, err := shared.Store.Get(r, "session")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		session.Values["username"] = username
+		session.Values["isLoggedIn"] = true
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -82,5 +84,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Token is valid, proceed to login
-	// ...
+	session, err := shared.Store.Get(r, "session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	session.Values["username"] = username
+	session.Values["isLoggedIn"] = true
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	return
 }

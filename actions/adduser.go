@@ -1,92 +1,93 @@
 package actions
 
 import (
-	"fmt"
-	"io/ioutil"
+	"ekni/shared"
 	"net/http"
-	"os/exec"
 
-	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"github.com/pquerna/otp/totp"
+	"golang.org/x/crypto/bcrypt"
 )
 
-type Client struct {
-	Name string
-	IP   string
-	Key  string
-}
-
-// CreateWireGuardClientConfig creates a configuration for a WireGuard client
-func CreateWireGuardClientConfig(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	clientName := vars["client_name"]
-	clientIP := vars["client_ip"]
-	clientPrivateKey := vars["client_private_key"]
-	// Generate the WireGuard client configuration file
-	config := fmt.Sprintf(`[Interface]
-PrivateKey = %s
-
-[Peer]
-PublicKey = %s
-AllowedIPs = %s
-`, clientPrivateKey, clientIP, clientName)
-	// Save the configuration to a file
-	err := ioutil.WriteFile(fmt.Sprintf("%s.conf", clientName), []byte(config), 0644)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Save the client configuration to the SQLite3 database
-	db, err := sqlx.Connect("sqlite3", "development.db")
+func AddUser(w http.ResponseWriter, r *http.Request) {
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	mfa := r.FormValue("mfa") == "true"
+	db, err := sqlx.Open("sqlite3", "users.db")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
 
-	client := &Client{
-		Name: clientName,
-		IP:   clientIP,
-		Key:  clientPrivateKey,
+	// Check if the user already exists in the database
+	var count int
+	err = db.Get(&count, "SELECT COUNT(*) FROM WebUser WHERE username=?", username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	_, err = db.Exec("INSERT INTO clients (name, ip, key) VALUES (?, ?, ?)", client.Name, client.IP, client.Key)
+	if count > 0 {
+		http.Error(w, "User already exists", http.StatusBadRequest)
+		return
+	}
+
+	// Hash the user's password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Rebuild the WireGuard server configuration
-	_, err = exec.Command("wg-quick", "down", "wg0.conf").Output()
+	// Insert the new user into the database
+	_, err = db.Exec("INSERT INTO WebUser (username, email, password, mfa, active, admin) VALUES (?, ?, ?, ?, ?, ?)", username, email, string(hashedPassword), mfa, true, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	clients := []Client{}
-	err = db.Select(&clients, "SELECT * FROM clients")
+	// If mfa is true, set up MFA for the user
+	if mfa {
+		url, err := AddNewMfa(username)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write([]byte(url))
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func AddNewMfa(username string) (string, error) {
+	// Authenticate the user
+	db, err := sqlx.Open("sqlite3", "users.db")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return "", err
+	}
+	defer db.Close()
+	user := shared.WebUser{}
+	err = db.Get(&user, "SELECT * FROM WebUser WHERE username=?", username)
+	if err != nil {
+		return "", err
 	}
 
-	serverConfig := "[Interface]\n"
-	for _, client := range clients {
-		serverConfig += fmt.Sprintf("Peer = %s\nAllowedIPs = %s\n", client.Key, client.IP)
+	// Generate a TOTP secret for the user
+	secret, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "Example Inc.",
+		AccountName: username,
+	})
+	if err != nil {
+		return "", err
 	}
 
-	// Save the server configuration to a file
-	err = ioutil.WriteFile("wg0.conf", []byte(serverConfig), 0644)
+	// Save the TOTP secret to the database
+	_, err = db.Exec("UPDATE WebUser SET mfa=?, secret=? WHERE username=?", true, secret.Secret(), username)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return "", err
 	}
 
-	// Bring up the WireGuard interface using the wg-quick tool
-	_, err = exec.Command("wg-quick", "up", "wg0.conf").Output()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, "WireGuard client configuration created and saved successfully")
+	// Return the QR code URL to the client
+	url := secret.URL()
+	return url, nil
 }
