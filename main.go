@@ -18,22 +18,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("Fail to read file: %v", err)
 	}
-	var config shared.EkniConfig
-	config.OtpIssuer = cfg.Section("otp").Key("issuer").String()
-	config.OtpDuration, err = cfg.Section("otp").Key("duration").Int()
+	var SystemConfig shared.EkniConfig
+	SystemConfig.OtpIssuer = cfg.Section("otp").Key("issuer").String()
+	SystemConfig.OtpDuration, err = cfg.Section("otp").Key("duration").Int()
 	if err != nil {
 		log.Fatalf("Fail to parse OtpDuration: %v", err)
 	}
-	config.AllowRegistration, err = cfg.Section("registration").Key("allow").Bool()
+	SystemConfig.AllowRegistration, err = cfg.Section("registration").Key("allow").Bool()
 	if err != nil {
 		log.Fatalf("Fail to parse AllowRegistration: %v", err)
 	}
-	config.AllowRegistrationOnlyFromDomain, err = cfg.Section("registration").Key("allow_only_from_domain").Bool()
+	SystemConfig.AllowRegistrationOnlyFromDomain, err = cfg.Section("registration").Key("allow_only_from_domain").Bool()
 	if err != nil {
 		log.Fatalf("Fail to parse AllowRegistrationOnlyFromDomain: %v", err)
 	}
-	config.RegistrationDomain = cfg.Section("registration").Key("domain").String()
-	config.WireGuardPort, err = cfg.Section("wireguard").Key("port").Int()
+	SystemConfig.RegistrationDomain = cfg.Section("registration").Key("domain").String()
+	SystemConfig.WireGuardPort, err = cfg.Section("wireguard").Key("port").Int()
 	if err != nil {
 		log.Fatalf("Fail to parse WireGuardPort: %v", err)
 	}
@@ -58,9 +58,8 @@ func main() {
 	r.HandleFunc("/api/getuserip", actions.GetUserIP).Methods("GET")
 	r.HandleFunc("/api/login/{username}/{password}", actions.Login).Methods("GET")
 	r.HandleFunc("/api/logoff/{username}", actions.Logoff).Methods("POST")
-	r.HandleFunc("/api/adduser/{username}/{password}/{mfa}", actions.AddUser).Methods("GET")
-
-	port := fmt.Sprintf(":%d", config.WireGuardPort)
+	r.HandleFunc("/api/adduser/{username}/{password}/{mfa}", func(w http.ResponseWriter, r *http.Request) { actions.AddUser(w, r, SystemConfig) }).Methods("GET")
+	port := fmt.Sprintf(":%d", SystemConfig.WireGuardPort)
 
 	// Start the HTTP server
 	err = http.ListenAndServe(port, r)
