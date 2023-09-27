@@ -1,0 +1,225 @@
+
+/* Reset some default styling */
+body, html {
+    margin: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+/* Style the login container */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #f0f0f0;
+}
+
+/* Style the login form */
+.login-form {
+    background-color: white;
+    padding: 40px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Style the input fields */
+.login-form input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* Style the login button */
+.login-btn {
+    width: calc(100% - 20px);
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.login-btn:hover {
+    background-color: #45a049;
+}
+
+/* Style the links */
+.links {
+    margin-top: 20px;
+}
+
+.links a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+
+/* Style the top bar with EKNI text */
+.top-bar {
+    background-color: white;
+    padding: 20px;
+    text-align: left;
+    font-size: 24px;
+    letter-spacing: 2px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the black bar */
+.left-nav .black-bar {
+    background-color: black;
+    height: 5px;
+    margin-bottom: 20px;
+}
+
+/* Update style of the login container to add some top margin */
+.login-container {
+    padding-top: 20px;  /* Changed margin to padding and increased the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 60px);  /* Adjusted the height calculation */
+    background-color: #f0f0f0;
+}
+
+/* Style for MFA token input field and checkbox when they are displayed */
+#mfa-token, label[for="mfa-check"] {
+    display: block;
+    margin-bottom: 20px;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 600px) {
+    .login-form {
+        padding: 20px;
+    }
+
+    .login-form input, .login-btn {
+        width: calc(100% - 10px);
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+
+    .links {
+        margin-top: 10px;
+    }
+
+    .top-bar {
+        padding: 10px;
+        font-size: 20px;
+    }
+}
+
+/* Media query for tablet devices */
+@media (min-width: 601px) and (max-width: 900px) {
+    .login-form {
+        padding: 30px;
+    }
+
+    .login-form input, .login-btn {
+        width: calc(100% - 15px);
+        padding: 9px;
+        margin-bottom: 15px;
+    }
+
+    .links {
+        margin-top: 15px;
+    }
+
+    .top-bar {
+        padding: 15px;
+        font-size: 22px;
+    }
+}
+
+/* Style the log off button */
+.log-off-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    float: right;  /* Right align the button */
+}
+
+.log-off-btn:hover {
+    background-color: #45a049;
+}
+
+/* Style the dashboard container */
+.dashboard-container {
+    display: flex;
+}
+
+/* Style the left navigation bar */
+.left-nav {
+    background-color: #f0f0f0;
+    padding: 20px;
+    width: 200px;
+}
+
+.username {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.new-client-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: calc(100% - 40px);
+}
+
+.new-client-btn:hover {
+    background-color: #45a049;
+}
+
+/* Style the main content area */
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.qr-code {
+    margin-right: 20px;
+}
+
+.config-details {
+    line-height: 1.6;
+}
+
+/* Style the navigation links in the left bar for admin dashboard */
+.nav-link {
+    display: block;
+    color: #4CAF50;
+    text-decoration: none;
+    margin-bottom: 10px;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+/* Style the main content area for admin dashboard */
+.connections-graph {
+    width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+}

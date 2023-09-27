@@ -7,16 +7,13 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
 
 // CreateWireGuardClientConfig creates a configuration for a WireGuard client
-func CreateWireGuardClientConfig(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	clientName := vars["client_name"]
-	clientIP := vars["client_ip"]
-	clientPrivateKey := vars["client_private_key"]
+func CreateWireGuardClientConfig(w http.ResponseWriter, r *http.Request, clientName string, clientIP string, clientPrivateKey string) {
+	// Parameters are now passed as arguments, so no need to retrieve them from the URL or request body
+
 	// Generate the WireGuard client configuration file
 	config := fmt.Sprintf(`[Interface]
 PrivateKey = %s

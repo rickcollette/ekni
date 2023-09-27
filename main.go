@@ -3,6 +3,7 @@ package main
 import (
 	"ekni/actions"
 	"ekni/shared"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -53,10 +54,35 @@ func main() {
 		http.Redirect(w, r, "/web/index.html", http.StatusFound)
 	})
 
-	r.HandleFunc("/api/init/{ip_address}/{listen_port}/{private_key}", actions.InitWireGuardServer).Methods("GET")
-	r.HandleFunc("/api/addclient/{client_name}/{client_ip}/{client_private_key}", actions.CreateWireGuardClientConfig).Methods("GET")
+	r.HandleFunc("/api/init", func(w http.ResponseWriter, r *http.Request) {
+		var request shared.InitRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		actions.InitWireGuardServer(w, r, request.IPAddress, fmt.Sprintf("%d", request.ListenPort), request.PrivateKey)
+	}).Methods("POST")
+
+	r.HandleFunc("/api/addclient", func(w http.ResponseWriter, r *http.Request) {
+		var client shared.Client
+		if err := json.NewDecoder(r.Body).Decode(&client); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		actions.CreateWireGuardClientConfig(w, r, client.Name, client.IP, client.Key)
+	}).Methods("POST")
+
 	r.HandleFunc("/api/getuserip", actions.GetUserIP).Methods("GET")
-	r.HandleFunc("/api/login/{username}/{password}", actions.Login).Methods("GET")
+
+	r.HandleFunc("/api/login", func(w http.ResponseWriter, r *http.Request) {
+		var user shared.WebUser
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		actions.Login(w, r, user.Username, user.Password)
+	}).Methods("POST")
+
 	r.HandleFunc("/api/logoff/{username}", actions.Logoff).Methods("POST")
 	r.HandleFunc("/api/adduser/{username}/{password}/{mfa}", func(w http.ResponseWriter, r *http.Request) { actions.AddUser(w, r, SystemConfig) }).Methods("GET")
 	port := fmt.Sprintf(":%d", SystemConfig.WireGuardPort)

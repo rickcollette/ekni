@@ -11,11 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-	token := r.FormValue("token")
-	// Authenticate the user's password
+func Login(w http.ResponseWriter, r *http.Request, username string, password string) {
+	// Removed the lines that extracted username and password from the request
+
+	token := r.FormValue("token") 
 	db, err := sqlx.Open("sqlite3", "users.db")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

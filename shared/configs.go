@@ -27,3 +27,9 @@ type Client struct {
 	IP   string
 	Key  string
 }
+
+type InitRequest struct {
+	IPAddress  string `json:"ip_address"`
+	ListenPort int    `json:"listen_port"`
+	PrivateKey string `json:"private_key"`
+}

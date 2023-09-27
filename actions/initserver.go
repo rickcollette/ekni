@@ -8,19 +8,15 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/gorilla/mux"
 )
 
 // InitWireGuardServer initializes a WireGuard server with the given parameters
-func InitWireGuardServer(w http.ResponseWriter, r *http.Request) {
-	// Retrieve the configuration parameters from the request
-	vars := mux.Vars(r)
-	ipAddress := vars["ip_address"]
-	listenPort := vars["listen_port"]
-	privateKey := vars["private_key"]
+func InitWireGuardServer(w http.ResponseWriter, r *http.Request, ipAddress string, listenPort string, privateKey string) {
+	// Now the parameters are directly passed as arguments, so no need to retrieve them from URL or request body
+
 	// Generate the WireGuard server configuration file
 	config := fmt.Sprintf(`[Interface]
-ddress = %s
+Address = %s
 ListenPort = %s
 PrivateKey = %s
 `, ipAddress, listenPort, privateKey)
