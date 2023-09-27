@@ -3,8 +3,8 @@ package actions
 import (
 	"ekni/shared"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 
 	"github.com/gorilla/mux"
@@ -26,7 +26,7 @@ PublicKey = %s
 AllowedIPs = %s
 `, clientPrivateKey, clientIP, clientName)
 	// Save the configuration to a file
-	err := ioutil.WriteFile(fmt.Sprintf("%s.conf", clientName), []byte(config), 0644)
+	err := os.WriteFile(fmt.Sprintf("%s.conf", clientName), []byte(config), 0644)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +71,7 @@ AllowedIPs = %s
 	}
 
 	// Save the server configuration to a file
-	err = ioutil.WriteFile("wg0.conf", []byte(serverConfig), 0644)
+	err = os.WriteFile("wg0.conf", []byte(serverConfig), 0644)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

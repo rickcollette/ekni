@@ -3,8 +3,8 @@ package actions
 import (
 	"ekni/shared"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gobuffalo/buffalo"
@@ -31,28 +31,26 @@ func DownloadWireGuardClientConfig(c buffalo.Context) error {
 		return c.Error(http.StatusNotFound, err)
 	}
 
-	userIPStr := fmt.Sprintf("%s", userIP)
-
 	// Check if the user's IP address matches the IP address associated with the client
 	var updatedConfig []byte
-	if userIPStr != client.IP {
+	if userIP != client.IP {
 		// Read the client configuration from the file
-		file, err := ioutil.ReadFile(fmt.Sprintf("%s.conf", clientName))
+		file, err := os.ReadFile(fmt.Sprintf("%s.conf", clientName))
 		if err != nil {
 			return c.Error(http.StatusInternalServerError, err)
 		}
 
 		// Update the client's IP address in the configuration file
-		updatedConfig = []byte(strings.Replace(string(file), client.IP, userIPStr, 1))
+		updatedConfig = []byte(strings.Replace(string(file), client.IP, userIP, 1))
 
 		// Write the updated configuration to disk
-		err = ioutil.WriteFile(fmt.Sprintf("%s.conf", clientName), updatedConfig, 0644)
+		err = os.WriteFile(fmt.Sprintf("%s.conf", clientName), updatedConfig, 0644)
 		if err != nil {
 			return c.Error(http.StatusInternalServerError, err)
 		}
 	} else {
 		// Read the client configuration from the file
-		file, err := ioutil.ReadFile(fmt.Sprintf("%s.conf", clientName))
+		file, err := os.ReadFile(fmt.Sprintf("%s.conf", clientName))
 		if err != nil {
 			return c.Error(http.StatusInternalServerError, err)
 		}

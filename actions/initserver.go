@@ -3,9 +3,9 @@ package actions
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 
 	"github.com/gorilla/mux"
@@ -25,7 +25,7 @@ ListenPort = %s
 PrivateKey = %s
 `, ipAddress, listenPort, privateKey)
 	// Save the configuration to a file
-	err := ioutil.WriteFile("wg0.conf", []byte(config), 0644)
+	err := os.WriteFile("wg0.conf", []byte(config), 0644)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
